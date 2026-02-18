@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VIPER Scanner</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              cyber: {
+                black: 'var(--bg-app)',
+                dark: 'var(--bg-panel)',
+                slate: 'var(--bg-element)',
+                text: 'var(--text-main)',
+                muted: 'var(--text-muted)',
+                primary: '#00f3ff', // Neon Cyan
+                secondary: '#bc13fe', // Neon Purple
+                danger: '#ff003c', // Neon Red
+                warning: '#fcee0a', // Neon Yellow
+                success: '#00ff9f', // Neon Green
+              }
+            },
+            fontFamily: {
+              mono: ['"JetBrains Mono"', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', "Liberation Mono", "Courier New", 'monospace'],
+              sans: ['"Inter"', 'system-ui', 'sans-serif'],
+            },
+            animation: {
+              'pulse-fast': 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+              'glitch': 'glitch 1s linear infinite',
+              'scanline': 'scanline 8s linear infinite',
+              'crt-flicker': 'flicker 0.15s infinite',
+            },
+            backgroundImage: {
+              'cyber-grid': 'linear-gradient(var(--grid-color) 1px, transparent 1px), linear-gradient(90deg, var(--grid-color) 1px, transparent 1px)',
+            }
+          },
+        },
+      }
+    </script>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;600;800&display=swap');
+
+      :root {
+        /* Light Mode Defaults */
+        --bg-app: #f0f4f8;
+        --bg-panel: #ffffff;
+        --bg-element: #e2e8f0;
+        --text-main: #0f172a; /* Slate 900 */
+        --text-muted: #64748b; /* Slate 500 */
+        --border-color: rgba(0, 0, 0, 0.1);
+        --card-bg: rgba(255, 255, 255, 0.8);
+        --grid-color: rgba(0, 0, 0, 0.05);
+      }
+
+      .dark {
+        /* Dark Mode Defaults - Transparent for 3D BG */
+        --bg-app: rgba(2, 2, 5, 0.85); 
+        --bg-panel: rgba(10, 10, 18, 0.6);
+        --bg-element: rgba(19, 19, 31, 0.8);
+        --text-main: #e2e8f0; /* Slate 200 */
+        --text-muted: #94a3b8; /* Slate 400 */
+        --border-color: rgba(255, 255, 255, 0.1);
+        --card-bg: rgba(5, 5, 10, 0.4); /* High transparency for glassmorphism */
+        --grid-color: rgba(0, 243, 255, 0.03);
+      }
+
+      /* Custom Cyber Cursor */
+      body {
+        cursor: none; /* Hide default cursor for custom effect */
+        background-color: #000;
+        /* 3D Security Background */
+        background-image: 
+          linear-gradient(to bottom, rgba(0,0,0,0.6), rgba(0,0,0,0.8)),
+          url('https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2670&auto=format&fit=crop');
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        background-repeat: no-repeat;
+        overflow-x: hidden;
+      }
+
+      /* Cursor Canvas */
+      #cursor-canvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 9999;
+      }
+
+      /* Hover states for interactive elements */
+      button, a, input, select, textarea, .cursor-pointer {
+        cursor: none; /* Keep hidden to use custom cursor */
+      }
+
+      /* CRT Scanline Effect */
+      body::before {
+        content: " ";
+        display: block;
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+        background: linear-gradient(
+          to bottom,
+          rgba(18, 16, 16, 0) 50%,
+          rgba(0, 0, 0, 0.1) 50%
+        );
+        background-size: 100% 4px;
+        z-index: 9998;
+        pointer-events: none;
+        opacity: 0.15;
+      }
+
+      /* Cyber Scrollbar */
+      ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: rgba(0,0,0,0.3); 
+      }
+      ::-webkit-scrollbar-thumb {
+        background: rgba(0, 243, 255, 0.2); 
+        border: 1px solid rgba(0, 243, 255, 0.3);
+        border-radius: 2px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #00f3ff; 
+        box-shadow: 0 0 10px #00f3ff;
+      }
+
+      /* Utilities */
+      .cyber-border {
+        border: 1px solid rgba(0, 243, 255, 0.2);
+        box-shadow: 0 0 10px rgba(0, 243, 255, 0.05), inset 0 0 20px rgba(0, 243, 255, 0.02);
+      }
+      
+      .cyber-card {
+        background: var(--card-bg);
+        backdrop-filter: blur(20px); /* Increased Blur for Glass effect */
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid var(--border-color);
+        transition: all 0.3s ease;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+      }
+
+      .text-glow {
+        text-shadow: 0 0 10px currentColor;
+      }
+
+      @keyframes flicker {
+        0% { opacity: 0.98; }
+        5% { opacity: 0.95; }
+        10% { opacity: 0.98; }
+        15% { opacity: 1; }
+        95% { opacity: 1; }
+        98% { opacity: 0.95; }
+        100% { opacity: 0.98; }
+      }
+
+      .crt-overlay {
+        animation: flicker 0.15s infinite;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "lucide-react": "https://esm.sh/lucide-react@^0.574.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
+    "recharts": "https://esm.sh/recharts@^3.7.0",
+    "@google/genai": "https://esm.sh/@google/genai@^1.41.0",
+    "react/": "https://esm.sh/react@^19.2.4/",
+    "react": "https://esm.sh/react@^19.2.4"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body class="text-cyber-text antialiased overflow-hidden selection:bg-cyber-primary selection:text-black transition-colors duration-300">
+    <canvas id="cursor-canvas"></canvas>
+    <div id="root"></div>
+
+    <script>
+      // Digital Terminal Cursor
+      const canvas = document.getElementById('cursor-canvas');
+      const ctx = canvas.getContext('2d');
+      let width = window.innerWidth;
+      let height = window.innerHeight;
+      
+      canvas.width = width;
+      canvas.height = height;
+
+      // Track exact mouse position
+      const cursor = { x: width / 2, y: height / 2 };
+      // Smooth interpolation for the trailing effect (the 'reticle' follows slightly slower)
+      const trailingCursor = { x: width / 2, y: height / 2 };
+
+      window.addEventListener('mousemove', (e) => {
+        cursor.x = e.clientX;
+        cursor.y = e.clientY;
+      });
+
+      window.addEventListener('resize', () => {
+        width = window.innerWidth;
+        height = window.innerHeight;
+        canvas.width = width;
+        canvas.height = height;
+      });
+
+      function lerp(start, end, factor) {
+        return start + (end - start) * factor;
+      }
+
+      function drawCursor() {
+        // Update trailing position
+        trailingCursor.x = lerp(trailingCursor.x, cursor.x, 0.2);
+        trailingCursor.y = lerp(trailingCursor.y, cursor.y, 0.2);
+
+        // 1. Center Dot (Exact Mouse Position)
+        ctx.beginPath();
+        ctx.fillStyle = '#ffffff';
+        ctx.arc(cursor.x, cursor.y, 2, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 2. Terminal Box / Reticle (Follows with slight delay)
+        ctx.strokeStyle = '#00f3ff';
+        ctx.lineWidth = 1.5;
+        
+        const size = 12; // Size of the corners
+        const gap = 4;   // Gap from center axis
+        
+        ctx.beginPath();
+        
+        // Top Left Corner
+        ctx.moveTo(trailingCursor.x - size, trailingCursor.y - gap);
+        ctx.lineTo(trailingCursor.x - size, trailingCursor.y - size);
+        ctx.lineTo(trailingCursor.x - gap, trailingCursor.y - size);
+        
+        // Top Right Corner
+        ctx.moveTo(trailingCursor.x + gap, trailingCursor.y - size);
+        ctx.lineTo(trailingCursor.x + size, trailingCursor.y - size);
+        ctx.lineTo(trailingCursor.x + size, trailingCursor.y - gap);
+        
+        // Bottom Right Corner
+        ctx.moveTo(trailingCursor.x + size, trailingCursor.y + gap);
+        ctx.lineTo(trailingCursor.x + size, trailingCursor.y + size);
+        ctx.lineTo(trailingCursor.x + gap, trailingCursor.y + size);
+        
+        // Bottom Left Corner
+        ctx.moveTo(trailingCursor.x - gap, trailingCursor.y + size);
+        ctx.lineTo(trailingCursor.x - size, trailingCursor.y + size);
+        ctx.lineTo(trailingCursor.x - size, trailingCursor.y + gap);
+        
+        ctx.stroke();
+
+        // 3. Faint Crosshair Lines (Optional, very subtle)
+        ctx.beginPath();
+        ctx.strokeStyle = 'rgba(0, 243, 255, 0.15)';
+        ctx.lineWidth = 1;
+        ctx.moveTo(trailingCursor.x - 20, trailingCursor.y);
+        ctx.lineTo(trailingCursor.x + 20, trailingCursor.y);
+        ctx.moveTo(trailingCursor.x, trailingCursor.y - 20);
+        ctx.lineTo(trailingCursor.x, trailingCursor.y + 20);
+        ctx.stroke();
+      }
+
+      function animate() {
+        ctx.clearRect(0, 0, width, height);
+        drawCursor();
+        requestAnimationFrame(animate);
+      }
+      
+      animate();
+    </script>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>

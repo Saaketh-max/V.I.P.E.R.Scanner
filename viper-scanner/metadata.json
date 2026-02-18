@@ -1,0 +1,5 @@
+{
+  "name": "VIPER Scanner",
+  "description": "VIPER: Vulnerability Inspection & Penetration Execution Radar. An advanced, AI-powered web application vulnerability scanner with auto-remediation suggestions.",
+  "requestFramePermissions": []
+}
