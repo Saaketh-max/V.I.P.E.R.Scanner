@@ -136,7 +136,7 @@ Follow these steps to deploy V.I.P.E.R. locally for development or testing.
 
 ## 🕹️ Usage
 
-1.  Ensure your *Frontend* is running (usually http://localhost:5173) and your *Python Worker* is running in the terminal.
+1.  Ensure your *Frontend* is running (https://aegis-scanner-54fc6.web.app/) and your *Python Worker* is running in the terminal.
 2.  Open the Dashboard in your browser.
 3.  Enter a target URL (e.g., http://testphp.vulnweb.com) and click *"Start Scan"*.
 4.  *Observe:*
